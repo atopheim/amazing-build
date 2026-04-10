@@ -1,0 +1,288 @@
+---
+// receipt-styled subscribe form. wires to /api/subscribe (server endpoint).
+---
+
+<div class="sub" data-sub>
+  <p class="sub-label">[ JOIN THE WAITLIST ]</p>
+
+  <form class="sub-form" data-sub-form autocomplete="off">
+    <input
+      type="checkbox"
+      name="botcheck"
+      class="honeypot"
+      tabindex="-1"
+      autocomplete="off"
+      aria-hidden="true"
+    />
+    <div class="sub-row">
+      <span class="sub-prompt">&gt;</span>
+      <input
+        type="email"
+        name="email"
+        placeholder="you@somewhere.tld"
+        required
+        class="sub-input"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+    </div>
+    <button type="submit" class="sub-btn">PRINT MY RECEIPT &nbsp;⏎</button>
+  </form>
+
+  <p class="sub-status" data-sub-status></p>
+
+  <div class="sub-result" data-sub-result hidden>
+    <div class="rule"></div>
+    <p class="result-line">CONFIRMED.</p>
+    <div class="receipt-line">
+      <span>POSITION</span><span class="dots"></span><span data-position class="bold">#--</span>
+    </div>
+    <div class="receipt-line">
+      <span>REFERRAL CODE</span><span class="dots"></span><span data-refid class="bold">--</span>
+    </div>
+    <div class="rule"></div>
+    <p class="share-instructions">
+      SKIP 10 SPOTS PER 3 FRIENDS
+    </p>
+    <div class="share-row">
+      <input
+        type="text"
+        readonly
+        class="share-input"
+        data-share-input
+        aria-label="Your share URL"
+      />
+      <button type="button" class="share-btn" data-share-copy>COPY</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getRefFromUrl(): string {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get('ref') ?? '').trim().toLowerCase();
+    } catch {
+      return '';
+    }
+  }
+
+  document.querySelectorAll<HTMLFormElement>('[data-sub-form]').forEach((form) => {
+    const wrap = form.closest<HTMLElement>('[data-sub]');
+    const status = wrap?.querySelector<HTMLElement>('[data-sub-status]') ?? null;
+    const result = wrap?.querySelector<HTMLElement>('[data-sub-result]') ?? null;
+    const positionEl = wrap?.querySelector<HTMLElement>('[data-position]') ?? null;
+    const refidEl = wrap?.querySelector<HTMLElement>('[data-refid]') ?? null;
+    const shareInput = wrap?.querySelector<HTMLInputElement>('[data-share-input]') ?? null;
+    const shareBtn = wrap?.querySelector<HTMLButtonElement>('[data-share-copy]') ?? null;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!status) return;
+
+      const fd = new FormData(form);
+      const email = String(fd.get('email') ?? '').trim();
+      const botcheck = String(fd.get('botcheck') ?? '');
+      if (!email) return;
+
+      status.textContent = 'PRINTING…';
+      status.dataset.tone = 'pending';
+
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            ref: getRefFromUrl(),
+            botcheck: botcheck || undefined,
+          }),
+        });
+
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          position?: number;
+          referralId?: string;
+          error?: string;
+          message?: string;
+        };
+
+        if (!res.ok || !data.ok) {
+          if (data.error === 'invalid_email') {
+            status.textContent = 'EMAIL LOOKS WRONG. TRY AGAIN.';
+          } else if (data.error === 'waitlist_not_configured') {
+            status.textContent = data.message ?? 'NOT YET CONNECTED. CHECK BACK SOON.';
+          } else {
+            status.textContent = 'PRINTER JAMMED. TRY AGAIN.';
+          }
+          status.dataset.tone = 'error';
+          return;
+        }
+
+        status.textContent = '';
+        form.hidden = true;
+        if (result) {
+          result.hidden = false;
+          if (positionEl) positionEl.textContent = `#${data.position ?? '?'}`;
+          if (refidEl) refidEl.textContent = (data.referralId ?? '').toUpperCase();
+          if (shareInput && data.referralId) {
+            const base = window.location.origin;
+            shareInput.value = `${base}/?ref=${data.referralId}`;
+          }
+        }
+      } catch (err) {
+        status.textContent = 'NETWORK ERROR. TRY AGAIN.';
+        status.dataset.tone = 'error';
+      }
+    });
+
+    shareBtn?.addEventListener('click', async () => {
+      if (!shareInput) return;
+      try {
+        await navigator.clipboard.writeText(shareInput.value);
+        const original = shareBtn.textContent;
+        shareBtn.textContent = 'COPIED!';
+        setTimeout(() => {
+          shareBtn.textContent = original;
+        }, 1500);
+      } catch {
+        shareInput.select();
+      }
+    });
+  });
+</script>
+
+<style>
+  .sub {
+    text-align: center;
+    margin: 0.5rem 0 0.25rem;
+  }
+
+  .sub-label {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .sub-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .sub-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5ch;
+    border-bottom: 1px dashed var(--rule);
+    padding: 0.4rem 0.25rem;
+  }
+
+  .sub-prompt {
+    color: var(--ink-dim);
+    font-weight: 700;
+  }
+
+  .sub-input {
+    flex: 1;
+    color: var(--ink);
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    padding: 0.1rem 0;
+  }
+
+  .sub-input::placeholder {
+    color: var(--ink-faint);
+  }
+
+  .sub-btn {
+    margin-top: 0.25rem;
+    padding: 0.55rem 0.5rem;
+    border: 1px dashed var(--rule);
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .sub-btn:hover {
+    border-style: solid;
+    background: rgba(245, 243, 238, 0.04);
+  }
+
+  .sub-btn:active {
+    transform: translateY(1px);
+  }
+
+  .sub-status {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    min-height: 1.2em;
+  }
+
+  .sub-status[data-tone='error'] {
+    color: var(--ink);
+  }
+
+  .sub-result {
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+
+  .result-line {
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  .share-instructions {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.06em;
+    margin: 0.5rem 0 0.4rem;
+  }
+
+  .share-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: stretch;
+    margin-bottom: 0.5rem;
+  }
+
+  .share-input {
+    flex: 1;
+    min-width: 0;
+    border: 1px dashed var(--rule);
+    padding: 0.4rem 0.5rem;
+    color: var(--ink-dim);
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+
+  .share-btn {
+    border: 1px dashed var(--rule);
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+
+  .share-btn:hover {
+    border-style: solid;
+  }
+
+  .honeypot {
+    position: absolute !important;
+    left: -9999px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>

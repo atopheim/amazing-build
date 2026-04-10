@@ -1,0 +1,173 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  builder: string;
+  builderUrl?: string;
+  screenshot: string;
+  editorial: string;
+  tags: string[];
+  url: string;
+}
+
+const { slug, title, builder, builderUrl, screenshot, editorial, tags, url } = Astro.props;
+---
+
+<article class="build-card">
+  <a href={`/builds/${slug}`} class="card-image-link">
+    <div class="card-image">
+      <img src={screenshot} alt={title} loading="lazy" />
+      <div class="card-overlay">
+        <span class="view-label">View build &rarr;</span>
+      </div>
+    </div>
+  </a>
+  <div class="card-body">
+    <div class="card-meta">
+      {builderUrl ? (
+        <a href={builderUrl} target="_blank" rel="noopener" class="builder-name">
+          {builder}
+        </a>
+      ) : (
+        <span class="builder-name">{builder}</span>
+      )}
+      {tags.length > 0 && (
+        <div class="tags">
+          {tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )}
+    </div>
+    <h3 class="card-title">
+      <a href={`/builds/${slug}`}>{title}</a>
+    </h3>
+    <p class="card-editorial">{editorial}</p>
+    <a href={url} target="_blank" rel="noopener" class="card-link">
+      Visit &rarr;
+    </a>
+  </div>
+</article>
+
+<style>
+  .build-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .build-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+
+  .card-image-link {
+    display: block;
+  }
+
+  .card-image {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #111;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+
+  .build-card:hover .card-image img {
+    transform: scale(1.03);
+  }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .build-card:hover .card-overlay {
+    opacity: 1;
+  }
+
+  .view-label {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    background: rgba(249, 115, 22, 0.9);
+    border-radius: 8px;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .builder-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title a {
+    color: var(--text);
+    transition: color 0.2s;
+  }
+
+  .card-title a:hover {
+    color: var(--accent);
+  }
+
+  .card-editorial {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+</style>

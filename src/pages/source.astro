@@ -1,0 +1,168 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Project start anchor — days elapsed since we started waiting.
+const PROJECT_START = new Date('2026-04-10T00:00:00Z');
+const now = new Date();
+const daysWaiting = Math.max(
+  0,
+  Math.floor((now.getTime() - PROJECT_START.getTime()) / (1000 * 60 * 60 * 24))
+);
+
+const currentObsession = 'Solo devs building tools that feel like secrets.';
+---
+
+<Base title="/source — amazing.build" description="Live receipt for amazing.build. Built in public.">
+  <section class="hero">
+    <article class="receipt-paper">
+      <header class="r-header">
+        <p class="r-top">/ SOURCE</p>
+        <p class="r-sub">LIVE RECEIPT · BUILT IN PUBLIC</p>
+      </header>
+
+      <div class="rule-double"></div>
+
+      <div class="block">
+        <p class="block-title">// WAITLIST</p>
+        <div class="receipt-line">
+          <span>SUBSCRIBERS</span><span class="dots"></span>
+          <span class="bold" data-subs>…</span>
+        </div>
+        <div class="receipt-line">
+          <span>DAYS WAITING</span><span class="dots"></span>
+          <span class="bold">{daysWaiting}</span>
+        </div>
+        <div class="receipt-line">
+          <span>EDITIONS SHIPPED</span><span class="dots"></span>
+          <span class="bold">0</span>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <div class="block">
+        <p class="block-title">// CURRENT OBSESSION</p>
+        <p class="obsession">"{currentObsession}"</p>
+      </div>
+
+      <div class="rule"></div>
+
+      <div class="block">
+        <p class="block-title">// THE DEAL</p>
+        <p class="deal">5-10 MIND-BLOWING BUILDS.</p>
+        <p class="deal">DELIVERED WEEKLY, ONCE IT SHIPS.</p>
+        <p class="deal">NO ALGORITHMS. NO FLUFF.</p>
+        <p class="deal">JUST TASTE.</p>
+      </div>
+
+      <div class="rule-double"></div>
+
+      <div class="r-footer">
+        <p><a href="/">&lt; BACK TO RECEIPT #001</a></p>
+      </div>
+    </article>
+  </section>
+</Base>
+
+<script>
+  async function loadSource() {
+    try {
+      const res = await fetch('/api/source');
+      if (!res.ok) throw new Error('bad status');
+      const data = (await res.json()) as { ok?: boolean; subscribers?: number };
+      const el = document.querySelector<HTMLElement>('[data-subs]');
+      if (el && data.ok) {
+        el.textContent = String(data.subscribers ?? 0);
+      } else if (el) {
+        el.textContent = '—';
+      }
+    } catch {
+      const el = document.querySelector<HTMLElement>('[data-subs]');
+      if (el) el.textContent = '—';
+    }
+  }
+  loadSource();
+</script>
+
+<style>
+  .hero {
+    padding: 2.5rem 1rem 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .receipt-paper {
+    width: 100%;
+    max-width: 44ch;
+    padding: var(--receipt-pad);
+    position: relative;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .r-header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .r-top {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .r-sub {
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    margin-top: 0.2rem;
+  }
+
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .block-title {
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+
+  .obsession {
+    font-size: 0.9rem;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    padding: 0.3rem 0.25rem;
+    color: var(--ink);
+  }
+
+  .deal {
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+  }
+
+  .bold {
+    font-weight: 700;
+  }
+
+  .r-footer {
+    text-align: center;
+    padding-bottom: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .r-footer a {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    color: var(--ink-dim);
+  }
+
+  .r-footer a:hover {
+    color: var(--ink);
+  }
+</style>

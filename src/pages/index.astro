@@ -1,0 +1,260 @@
+---
+import Base from '../layouts/Base.astro';
+import SubscribeForm from '../components/SubscribeForm.astro';
+
+const today = new Date();
+const receiptDate = today
+  .toISOString()
+  .slice(0, 10)
+  .replace(/-/g, '.');
+---
+
+<Base>
+  <section class="hero">
+    <article class="receipt-paper" data-receipt>
+      <header class="r-header">
+        <p class="r-top">AMAZING.BUILD</p>
+        <p class="r-sub">RECEIPT #001 · PRE-LAUNCH</p>
+      </header>
+
+      <div class="rule-double"></div>
+
+      <div class="r-meta">
+        <div class="receipt-line">
+          <span>DATE</span><span class="dots"></span><span>{receiptDate}</span>
+        </div>
+        <div class="receipt-line">
+          <span>FOR</span><span class="dots"></span><span>YOUR CURIOSITY</span>
+        </div>
+        <div class="receipt-line">
+          <span>DROP</span><span class="dots"></span><span>TBD (SOON)</span>
+        </div>
+        <div class="receipt-line">
+          <span>STATUS</span><span class="dots"></span><span>PRE-LAUNCH</span>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <div class="r-items">
+        <p class="r-items-title">ITEMS PENDING</p>
+        <div class="receipt-line">
+          <span>5 × MIND-BLOWING BUILDS</span><span class="dots"></span><span>PENDING</span>
+        </div>
+        <div class="receipt-line">
+          <span>1 × WEEKLY DROP RITUAL</span><span class="dots"></span><span>PENDING</span>
+        </div>
+        <div class="receipt-line">
+          <span>∞ × HOLY-SHIT MOMENTS</span><span class="dots"></span><span>PENDING</span>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <div class="r-totals">
+        <div class="receipt-line">
+          <span>SUBTOTAL</span><span class="dots"></span><span>FREE FOREVER</span>
+        </div>
+        <div class="receipt-line">
+          <span>TAX</span><span class="dots"></span><span>YOUR TIME</span>
+        </div>
+        <div class="receipt-line">
+          <span class="bold">TOTAL</span><span class="dots"></span><span class="bold">PRICELESS</span>
+        </div>
+      </div>
+
+      <div class="rule-double"></div>
+
+      <div class="r-pitch">
+        <p>A WEEKLY CURATED DROP OF MIND-BLOWING</p>
+        <p>PROJECTS. IF IT DOESN'T MAKE YOU SAY</p>
+        <p>"HOLY SHIT, SOMEONE BUILT THAT?"</p>
+        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— IT DOESN'T MAKE THE CUT.</p>
+      </div>
+
+      <div class="rule"></div>
+
+      <SubscribeForm />
+
+      <div class="rule-double"></div>
+
+      <div class="r-footer">
+        <p>** CURATED WITH TASTE, NOT ALGORITHMS **</p>
+        <p class="faint">// retain this receipt for your records //</p>
+      </div>
+
+      <div class="perforation"></div>
+    </article>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 2.5rem 1rem 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .receipt-paper {
+    width: 100%;
+    max-width: 44ch;
+    padding: var(--receipt-pad);
+    background: transparent;
+    position: relative;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
+
+  .receipt-paper::before,
+  .receipt-paper::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background-image:
+      radial-gradient(circle at 4px 4px, var(--paper) 4px, transparent 4.5px);
+    background-size: 12px 8px;
+    background-repeat: repeat-x;
+    background-color: var(--rule);
+    -webkit-mask-image: linear-gradient(to right, black 0, black 100%);
+  }
+
+  .receipt-paper::before {
+    top: 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+
+  .receipt-paper::after {
+    bottom: 0;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .r-header {
+    text-align: center;
+    margin-bottom: 0.75rem;
+    padding-top: 1rem;
+  }
+
+  .r-top {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .r-sub {
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    margin-top: 0.2rem;
+  }
+
+  .r-meta,
+  .r-items,
+  .r-totals {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .r-items-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    margin-bottom: 0.25rem;
+  }
+
+  .bold {
+    font-weight: 700;
+  }
+
+  .r-pitch {
+    text-align: center;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+  }
+
+  .r-pitch p {
+    white-space: nowrap;
+  }
+
+  .r-footer {
+    text-align: center;
+    padding-bottom: 1.25rem;
+    margin-top: 0.25rem;
+  }
+
+  .r-footer p {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+
+  .perforation {
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    height: 10px;
+    background-image: radial-gradient(circle at 6px 5px, var(--paper) 5px, transparent 5.5px);
+    background-size: 14px 10px;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+
+  /* --- one-shot print-in animation --- */
+  [data-receipt] > * {
+    opacity: 0;
+    animation: print-in 0.45s ease-out forwards;
+  }
+
+  [data-receipt] > *:nth-child(1) { animation-delay: 0.05s; }
+  [data-receipt] > *:nth-child(2) { animation-delay: 0.18s; }
+  [data-receipt] > *:nth-child(3) { animation-delay: 0.30s; }
+  [data-receipt] > *:nth-child(4) { animation-delay: 0.38s; }
+  [data-receipt] > *:nth-child(5) { animation-delay: 0.48s; }
+  [data-receipt] > *:nth-child(6) { animation-delay: 0.56s; }
+  [data-receipt] > *:nth-child(7) { animation-delay: 0.66s; }
+  [data-receipt] > *:nth-child(8) { animation-delay: 0.74s; }
+  [data-receipt] > *:nth-child(9) { animation-delay: 0.84s; }
+  [data-receipt] > *:nth-child(10) { animation-delay: 0.92s; }
+  [data-receipt] > *:nth-child(11) { animation-delay: 1.02s; }
+  [data-receipt] > *:nth-child(12) { animation-delay: 1.12s; }
+  [data-receipt] > *:nth-child(13) { animation-delay: 1.22s; }
+
+  @keyframes print-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+      filter: blur(0.3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-receipt] > * {
+      opacity: 1;
+      animation: none;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .receipt-paper {
+      font-size: 0.82rem;
+      padding: 1rem;
+    }
+    .r-top {
+      font-size: 1rem;
+    }
+    .r-pitch p {
+      white-space: normal;
+    }
+  }
+</style>

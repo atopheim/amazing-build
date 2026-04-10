@@ -1,0 +1,315 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'amazing.build — receipt #001',
+  description = 'A weekly curated drop of mind-blowing builds. Printed on paper, not algorithms.',
+} = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="/" class="logo" data-logo>
+          amazing<span class="dot">.</span>build
+        </a>
+        <div class="nav-links">
+          <a href="/source">/source</a>
+        </div>
+      </div>
+      <div class="nav-rule"></div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="footer-rule"></div>
+      <div class="footer-inner">
+        <p class="footer-line">** THANK YOU FOR VISITING **</p>
+        <p class="footer-line dim">no algorithms were harmed in the making of this site</p>
+        <p class="footer-line faint">{new Date().getFullYear()} · amazing.build</p>
+      </div>
+    </footer>
+
+    <!-- easter egg receipt, triggered by konami code or 7 logo clicks -->
+    <div class="egg" data-egg hidden role="dialog" aria-label="hidden receipt">
+      <div class="egg-backdrop" data-egg-close></div>
+      <article class="egg-paper">
+        <header class="r-header">
+          <p class="r-top">AMAZING.BUILD</p>
+          <p class="r-sub">SECRET RECEIPT · #???</p>
+        </header>
+        <div class="rule-double"></div>
+        <p class="egg-line">** YOU FOUND IT **</p>
+        <div class="rule"></div>
+        <p class="egg-body">CURIOSITY IS THE ONLY CURRENCY</p>
+        <p class="egg-body">THAT COMPOUNDS FASTER THAN TIME.</p>
+        <div class="rule"></div>
+        <p class="egg-body dim">&nbsp;</p>
+        <p class="egg-body">NOMINATE A BUILD YOU LOVE:</p>
+        <p class="egg-body"><a href="mailto:hey@amazing.build?subject=nomination">hey@amazing.build</a></p>
+        <div class="rule-double"></div>
+        <button class="egg-close" data-egg-close>[ CLOSE ]</button>
+      </article>
+    </div>
+
+    <script>
+      // --- konami code ---
+      const KONAMI = [
+        'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+        'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+        'b', 'a',
+      ];
+      let konamiPos = 0;
+
+      const egg = document.querySelector<HTMLElement>('[data-egg]');
+      function openEgg() {
+        if (!egg) return;
+        egg.hidden = false;
+      }
+      function closeEgg() {
+        if (!egg) return;
+        egg.hidden = true;
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const expected = KONAMI[konamiPos];
+        const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        if (key === expected) {
+          konamiPos += 1;
+          if (konamiPos === KONAMI.length) {
+            konamiPos = 0;
+            openEgg();
+          }
+        } else {
+          konamiPos = key === KONAMI[0] ? 1 : 0;
+        }
+        if (e.key === 'Escape') closeEgg();
+      });
+
+      // --- 7 logo clicks ---
+      const logo = document.querySelector<HTMLElement>('[data-logo]');
+      let logoClicks = 0;
+      let logoTimer: number | undefined;
+      logo?.addEventListener('click', (e) => {
+        logoClicks += 1;
+        if (logoTimer) window.clearTimeout(logoTimer);
+        logoTimer = window.setTimeout(() => { logoClicks = 0; }, 1500);
+        if (logoClicks >= 7) {
+          e.preventDefault();
+          logoClicks = 0;
+          openEgg();
+        }
+      });
+
+      document.querySelectorAll<HTMLElement>('[data-egg-close]').forEach((el) => {
+        el.addEventListener('click', closeEgg);
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--paper);
+  }
+
+  .nav-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+  }
+
+  .nav-rule {
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .logo {
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--ink);
+    user-select: none;
+  }
+
+  .logo .dot {
+    color: var(--ink-dim);
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+  }
+
+  .nav-links a:hover {
+    color: var(--ink);
+  }
+
+  .footer {
+    margin-top: 4rem;
+  }
+
+  .footer-rule {
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .footer-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+    text-align: center;
+  }
+
+  .footer-line {
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  .footer-line.dim {
+    color: var(--ink-dim);
+    text-transform: none;
+    letter-spacing: 0;
+    font-style: italic;
+    font-size: 0.78rem;
+  }
+
+  .footer-line.faint {
+    color: var(--ink-faint);
+    font-size: 0.75rem;
+  }
+
+  /* --- easter egg receipt --- */
+  .egg {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    animation: egg-in 0.25s ease-out;
+  }
+
+  .egg[hidden] {
+    display: none;
+  }
+
+  .egg-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 11, 0.88);
+    backdrop-filter: blur(2px);
+  }
+
+  .egg-paper {
+    position: relative;
+    max-width: 44ch;
+    width: 100%;
+    padding: 1.5rem;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+    font-family: var(--font-mono);
+    text-align: center;
+  }
+
+  .egg-paper .r-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .egg-paper .r-top {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .egg-paper .r-sub {
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    margin-top: 0.2rem;
+  }
+
+  .egg-line {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin: 0.5rem 0;
+  }
+
+  .egg-body {
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    line-height: 1.7;
+  }
+
+  .egg-body a {
+    color: var(--ink);
+  }
+
+  .egg-close {
+    margin-top: 0.25rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px dashed var(--rule);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  .egg-close:hover {
+    border-style: solid;
+  }
+
+  @keyframes egg-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .nav-inner {
+      padding: 0.85rem 1rem 0.4rem;
+    }
+  }
+</style>

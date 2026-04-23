@@ -4,6 +4,6 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://amazing.build',
-  output: 'hybrid',
+  output: 'static',
   adapter: vercel(),
 });

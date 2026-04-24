@@ -111,14 +111,23 @@ const {
       const logo = document.querySelector<HTMLElement>('[data-logo]');
       let logoClicks = 0;
       let logoTimer: number | undefined;
+      let navTimer: number | undefined;
       logo?.addEventListener('click', (e) => {
+        e.preventDefault();
         logoClicks += 1;
+        if (navTimer) window.clearTimeout(navTimer);
         if (logoTimer) window.clearTimeout(logoTimer);
         logoTimer = window.setTimeout(() => { logoClicks = 0; }, 1500);
         if (logoClicks >= 7) {
-          e.preventDefault();
           logoClicks = 0;
           openEgg();
+          return;
+        }
+        if (logoClicks === 1) {
+          navTimer = window.setTimeout(() => {
+            logoClicks = 0;
+            window.location.href = '/';
+          }, 350);
         }
       });
 

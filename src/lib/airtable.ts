@@ -89,6 +89,21 @@ export async function countWaitlistRecords(env: AirtableEnv): Promise<number> {
   return count;
 }
 
+export async function findByEmail(
+  env: AirtableEnv,
+  email: string
+): Promise<AirtableRecord<WaitlistFields> | null> {
+  const escaped = email.replace(/"/g, '\\"');
+  const formula = `{Email} = "${escaped}"`;
+  const res = await fetch(
+    tableUrl(env, { filterByFormula: formula, maxRecords: '1' }),
+    { headers: { Authorization: `Bearer ${env.token}` } }
+  );
+  if (!res.ok) return null;
+  const data = (await res.json()) as { records: AirtableRecord<WaitlistFields>[] };
+  return data.records[0] ?? null;
+}
+
 export async function findByReferralId(
   env: AirtableEnv,
   refId: string

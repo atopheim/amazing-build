@@ -4,16 +4,40 @@ import {
   createWaitlistRecord,
   countWaitlistRecords,
   findByReferralId,
+  findByEmail,
   generateReferralId,
   isValidEmail,
 } from '../../lib/airtable';
 
 export const prerender = false;
 
-function json(status: number, body: unknown): Response {
+// In-memory rate limiter: 5 req/min per IP. Resets on cold start — acceptable for serverless.
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function getIp(request: Request): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    request.headers.get('x-real-ip') ??
+    'unknown'
+  );
+}
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 5) return false;
+  entry.count += 1;
+  return true;
+}
+
+function json(status: number, body: unknown, extraHeaders?: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
   });
 }
 
@@ -28,6 +52,10 @@ export const POST: APIRoute = async ({ request }) => {
   // Honeypot — bots fill this.
   if (payload.botcheck) {
     return json(200, { ok: true, position: 0, referralId: '' });
+  }
+
+  if (!checkRateLimit(getIp(request))) {
+    return json(429, { ok: false, error: 'rate_limited' }, { 'Retry-After': '60' });
   }
 
   const email = (payload.email ?? '').trim().toLowerCase();
@@ -47,6 +75,16 @@ export const POST: APIRoute = async ({ request }) => {
   const ref = (payload.ref ?? '').trim().toLowerCase().slice(0, 16);
 
   try {
+    // Idempotent: return existing record if email already registered.
+    const existing = await findByEmail(env, email);
+    if (existing) {
+      let position = Number(existing.fields.Position ?? 0);
+      if (!position) {
+        try { position = await countWaitlistRecords(env); } catch { position = 0; }
+      }
+      return json(200, { ok: true, position, referralId: existing.fields.ReferralId ?? '' });
+    }
+
     // Resolve referrer if ref provided.
     let referredBy = '';
     if (ref) {
